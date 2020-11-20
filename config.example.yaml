@@ -1,0 +1,13 @@
+app:
+  version: "0.1-dev"
+  debug: true
+  env: "dev"
+secrets:
+  object_storage:
+    endpoint: ""
+    region: ""
+    bucket: ""
+    access_key: ""
+    secret_key: ""
+    token: ""
+  sentry_dsn: ""
