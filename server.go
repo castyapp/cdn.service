@@ -57,11 +57,11 @@ func main() {
 	}
 
 	router := gin.New()
-	router.GET("/o/:object_id", func(ctx *gin.Context) {
+	router.GET("/uploads/:bucket/:object_id", func(ctx *gin.Context) {
 		mCtx, cancel := context.WithTimeout(ctx, time.Second * 10)
 		defer cancel()
 		output, err := GetS3Bucket().GetObjectWithContext(mCtx, &s3.GetObjectInput{
-			Bucket: aws.String(config.Map.Secrets.ObjectStorage.Bucket),
+			Bucket: aws.String(ctx.Param("bucket")),
 			Key: aws.String(ctx.Param("object_id")),
 		})
 		if err != nil {

@@ -6,8 +6,6 @@ secrets:
   object_storage:
     endpoint: ""
     region: ""
-    bucket: ""
     access_key: ""
     secret_key: ""
-    token: ""
   sentry_dsn: ""

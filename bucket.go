@@ -15,7 +15,6 @@ func GetS3Bucket() *s3.S3 {
 	opts.WithCredentials(credentials.NewStaticCredentialsFromCreds(credentials.Value{
 		AccessKeyID: config.Map.Secrets.ObjectStorage.AccessKey,
 		SecretAccessKey: config.Map.Secrets.ObjectStorage.SecretKey,
-		SessionToken: config.Map.Secrets.ObjectStorage.Token,
 	}))
 	sess := session.Must(session.NewSession(opts))
 	return s3.New(sess)
