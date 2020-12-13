@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS builder
+FROM golang:1.15
 
 LABEL maintainer="Alireza Josheghani <josheghani.dev@gmail.com>"
 
@@ -10,11 +10,6 @@ ADD . /app
 
 # build project
 RUN go build -o server .
-
-FROM alpine:latest
-
-WORKDIR /app
-COPY --from=builder /app/server /app
 
 EXPOSE 5555
 
