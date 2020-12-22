@@ -4,15 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/CastyLab/cdn.service/config"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/getsentry/sentry-go"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/CastyLab/cdn.service/config"
+	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go"
 )
 
 var (
@@ -35,7 +35,7 @@ func init() {
 		log.Fatal(fmt.Errorf("could not load config: %v", err))
 	}
 
-	if err := sentry.Init(sentry.ClientOptions{ Dsn: config.Map.Secrets.SentryDsn }); err != nil {
+	if err := sentry.Init(sentry.ClientOptions{Dsn: config.Map.Secrets.SentryDsn}); err != nil {
 		log.Fatal(fmt.Errorf("could not initilize sentry: %v", err))
 	}
 }
@@ -56,19 +56,27 @@ func main() {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	minioClient, err := minio.NewV4(
+		config.Map.Secrets.ObjectStorage.Endpoint,
+		config.Map.Secrets.ObjectStorage.AccessKey,
+		config.Map.Secrets.ObjectStorage.SecretKey,
+		false,
+	)
+	if err != nil {
+		sentry.CaptureException(err)
+		log.Fatalln(err)
+	}
+
 	router := gin.New()
 	router.GET("/uploads/:bucket/:object_id", func(ctx *gin.Context) {
-		mCtx, cancel := context.WithTimeout(ctx, time.Second * 10)
+		mCtx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
-		output, err := GetS3Bucket().GetObjectWithContext(mCtx, &s3.GetObjectInput{
-			Bucket: aws.String(ctx.Param("bucket")),
-			Key: aws.String(ctx.Param("object_id")),
-		})
+		output, err := minioClient.GetObjectWithContext(mCtx, ctx.Param("bucket"), ctx.Param("object_id"), minio.GetObjectOptions{})
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusNotFound)
 			return
 		}
-		if _, err := io.Copy(ctx.Writer, output.Body); err != nil {
+		if _, err := io.Copy(ctx.Writer, output); err != nil {
 			ctx.AbortWithStatus(http.StatusNotFound)
 			return
 		}
