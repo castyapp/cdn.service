@@ -1,33 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"os"
+	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
+	"github.com/hashicorp/hcl"
 )
 
 type ConfigMap struct {
-	SentryDsn          string `yaml:"sentry_dsn"`
-	Endpoint           string `yaml:"endpoint"`
-	Region             string `yaml:"region"`
-	UseHttps           bool   `yaml:"use_https"`
-	InsecureSkipVerify bool   `yaml:"insecure_skip_verify"`
-	AccessKey          string `yaml:"access_key"`
-	SecretKey          string `yaml:"secret_key"`
+	SentryDsn          string `hcl:"sentry_dsn"`
+	Endpoint           string `hcl:"endpoint"`
+	Region             string `hcl:"region"`
+	UseHttps           bool   `hcl:"use_https"`
+	InsecureSkipVerify bool   `hcl:"insecure_skip_verify"`
+	AccessKey          string `hcl:"access_key"`
+	SecretKey          string `hcl:"secret_key"`
 }
 
 var config = new(ConfigMap)
 
-func loadConfig(filename string) error {
-	file, err := os.Open(filename)
+func loadConfig(filename string) (err error) {
+	d, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return fmt.Errorf("could not open config file: %v", err)
+		return err
 	}
-	if err := yaml.NewDecoder(file).Decode(&config); err != nil {
-		return fmt.Errorf("could not decode config file: %v", err)
+	obj, err := hcl.Parse(string(d))
+	if err != nil {
+		return err
 	}
-	log.Printf("ConfigMap Loaded!")
-	return nil
+	// Build up the result
+	if err := hcl.DecodeObject(&config, obj); err != nil {
+		return err
+	}
+	return
 }
