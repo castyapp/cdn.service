@@ -15,17 +15,10 @@ jobs:
       DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       DOCKER_TARGET_PLATFORM: linux/amd64,linux/arm64,linux/arm/v7
-      COMPOSE_FILE: .ci/docker-compose.yaml
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
            
-      - name: Run redis and mongodb containers
-        run: docker-compose up -d redis db
-
-      - name: Run tests
-        run: docker-compose run test
-
       - name: Set up Docker Buildx
         uses: crazy-max/ghaction-docker-buildx@v2
         with:
