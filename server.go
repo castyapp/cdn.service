@@ -32,7 +32,7 @@ func init() {
 	port = flag.Int("port", 5555, "CDN server port")
 	host = flag.String("host", "0.0.0.0", "CDN server host")
 
-	configFileName := flag.String("config-file", "config.yaml", "config.yaml file")
+	configFileName := flag.String("config-file", "config.hcl", "config.hcl file")
 
 	flag.Parse()
 	log.Printf("Loading ConfigMap from file: [%s]", *configFileName)
